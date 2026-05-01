@@ -13,48 +13,158 @@
 </head>
 <body>
   <div id="app">
+    <!-- DIALPAD VIEW -->
     <div class="view active" id="view-dialpad">
-      <div class="dialpad-display"></div>
-      <div class="dialpad-grid"></div>
-      <div class="dialpad-call-btn"></div>
+      <div class="dialpad-display">
+        <div class="dialpad-number" id="dialpad-number">Enter a number</div>
+        <div class="dialpad-name" id="dialpad-name"></div>
+      </div>
+      <div class="dialpad-grid">
+        <button class="key" data-key="1"><span>1</span></button>
+        <button class="key" data-key="2"><span>2</span><small>ABC</small></button>
+        <button class="key" data-key="3"><span>3</span><small>DEF</small></button>
+        <button class="key" data-key="4"><span>4</span><small>GHI</small></button>
+        <button class="key" data-key="5"><span>5</span><small>JKL</small></button>
+        <button class="key" data-key="6"><span>6</span><small>MNO</small></button>
+        <button class="key" data-key="7"><span>7</span><small>PQRS</small></button>
+        <button class="key" data-key="8"><span>8</span><small>TUV</small></button>
+        <button class="key" data-key="9"><span>9</span><small>WXYZ</small></button>
+        <button class="key" data-key="*"><span>*</span></button>
+        <button class="key" data-key="0"><span>0</span><small>+</small></button>
+        <button class="key" data-key="#"><span>#</span></button>
+      </div>
+      <div class="dialpad-actions">
+        <button class="action-btn" id="add-from-dialpad" title="Add to contacts">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        </button>
+        <button class="call-btn" id="call-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M20.01 15.38c-1.23 0-2.42-.2-3.53-.56-.35-.12-.74-.03-1.01.24l-1.57 1.97c-2.83-1.35-5.48-3.9-6.89-6.83l1.95-1.66c.27-.28.35-.67.24-1.02-.37-1.11-.56-2.3-.56-3.53V3.99c0-.55-.45-1-1-1H4.01c-.55 0-1 .45-1 1v1.01c0 4.41 3.59 8 8 8 .34 0 .67-.04 1-.11.16.53.45 1.02.85 1.44.47.5 1 .73 1.63.73h1.01c.55 0 1 .45 1 1v1.01c0 1.27-.52 2.43-1.37 3.29-.88.88-2.04 1.42-3.28 1.42h-.26c-.55 0-1 .45-1 1v.91c0 .55.45 1 1 1h4.59c.55 0 1-.45 1-1v-.91c0-.82-.4-1.54-1.01-1.97-.63-.45-1.07-.67-1.75-.67-.55 0-1 .45-1 1v.91c0 .55.45 1 1 1h3.93c.55 0 1-.45 1-1v-.91c0-.55-.45-1-1-1-.82 0-1.54.4-1.97 1.01-.45.63-.67 1.07-.67 1.75 0 .55.45 1 1 1v.91c0 .82.4 1.54 1.01 1.97 1.44 1.01 2.96 2.11 4.87 2.11V18c0 .55.45 1 1 1h1.01c.55 0 1-.45 1-1v-.06c1.14-.48 2.16-1.23 2.98-2.22l.57-.7c.37-.47.52-.78.52-1.39V5.39c0-.55-.45-1-1-1h-.01c-.55 0-1 .45-1 1v1.53c0 .67-.14 1.15-.34 1.5-.2.34-.42.6-.72.83-.61.47-1.34.79-2.17.96V9c0 .55.45 1 1 1h1.01z"/></svg>
+        </button>
+        <button class="action-btn" id="backspace-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.22 20.59H2l7.5-9-7.5-9h7.22c.73 0 1.42.34 1.87.92L18.53 12l-7.44 8.58c-.45.58-1.14.92-1.87.92zM16.39 12l-1.72-1.72 3.5-3.5 1.72 1.72z"/></svg>
+        </button>
+      </div>
     </div>
 
-    <nav class="tab-bar">
-      <button class="tab-btn active" data-view="dialpad">Keypad</button>
-      <button class="tab-btn" data-view="contacts">Contacts</button>
-      <button class="tab-btn" data-view="history">Recents</button>
-      <button class="tab-btn" data-view="settings">Settings</button>
-    </nav>
-
+    <!-- CONTACTS VIEW -->
     <div class="view" id="view-contacts">
+      <div class="search-bar">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input type="search" id="contact-search" placeholder="Search contacts...">
+      </div>
       <div class="contacts-list"></div>
-      <button class="add-contact-btn">+ Add Contact</button>
     </div>
 
+    <!-- HISTORY VIEW -->
     <div class="view" id="view-history">
       <div class="history-list"></div>
     </div>
 
+    <!-- SETTINGS VIEW -->
     <div class="view" id="view-settings">
+      <div class="settings-header">Twilio Configuration</div>
+      <div class="settings-description">Enter your Twilio credentials to make calls. These are stored locally on your device.</div>
       <form class="settings-form" id="settings-form">
-        <label for="setting-sid">Account SID<input id="setting-sid" type="text" placeholder="AC..."></label>
-        <label for="setting-token">Auth Token<input id="setting-token" type="password" placeholder="..."></label>
-        <label for="setting-callerid">Caller ID<input id="setting-callerid" type="tel" placeholder="+1..."></label>
-        <button type="submit" class="save-settings-btn">Save Settings</button>
+        <div class="field-group">
+          <label for="setting-sid">Account SID</label>
+          <input id="setting-sid" type="text" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+        </div>
+        <div class="field-group">
+          <label for="setting-token">Auth Token</label>
+          <input id="setting-token" type="password" placeholder="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+        </div>
+        <div class="field-group">
+          <label for="setting-callerid">Caller ID</label>
+          <input id="setting-callerid" type="tel" placeholder="+1xxxxxxxxxx">
+        </div>
+        <button type="submit" class="save-btn">Save Settings</button>
+        <div id="settings-status"></div>
       </form>
     </div>
 
+    <!-- ACTIVE CALL VIEW -->
     <div class="view" id="view-call">
-      <div class="call-status"></div>
-      <div class="call-timer">00:00</div>
-      <div class="call-controls">
-        <button class="mute-btn">Mute</button>
-        <button class="hold-btn">Hold</button>
-        <button class="keypad-btn">Keypad</button>
-        <button class="end-call-btn">End</button>
+      <div class="call-content">
+        <div class="call-status">Calling...</div>
+        <div class="call-number" id="call-number"></div>
+        <div class="call-timer" id="call-timer">00:00</div>
+        <div class="call-controls">
+          <button class="control-btn" id="mute-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.41c-.38-.55-.77-1.07-1.21-1.55L12 10.36V11h2.05l-.07-.59zM4.27 3H3v2h2.05l7.11 7.11c-.82.54-1.39 1.42-1.61 2.45H4.27c-.22-.63-.27-1.32-.04-1.94L9.13 12l-2.14-.01L4.27 3zM12 4L9.19 6.81 12 9.63V4z"/></svg>
+            <span>Mute</span>
+          </button>
+          <button class="control-btn" id="hold-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14z"/></svg>
+            <span>Hold</span>
+          </button>
+          <button class="control-btn" id="keypad-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 19H5c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v4h-2V9h-4v2h-2V9h-4v8h4v-2h2v2h4v-2h2v4c0 1.1-.9 2-2 2z"/></svg>
+            <span>Keypad</span>
+          </button>
+          <button class="control-btn end-btn" id="end-call-btn">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.23-2.67 2.15v-3.41c1.21-.74 2.63-1.21 4.23-1.21 1.95 0 3.73.68 5.11 1.82l1.31-1.31A7.962 7.962 0 0 0 12 5c-4.42 0-8 3.58-8 8s3.58 8 8 8c1.51 0 2.93-.43 4.17-1.15l-1.31-1.31c-1.38 1.13-3.15 1.8-5.11 1.8z" transform="rotate(135 12 12)"/></svg>
+            <span>End</span>
+          </button>
+        </div>
       </div>
     </div>
+
+    <!-- CONTACT MODAL -->
+    <div class="modal-overlay" id="contact-modal">
+      <div class="modal">
+        <div class="modal-header">Add Contact</div>
+        <div class="modal-body">
+          <div class="field-group">
+            <label for="modal-name">Name</label>
+            <input id="modal-name" type="text" placeholder="John Doe">
+          </div>
+          <div class="field-group">
+            <label for="modal-phone">Phone</label>
+            <input id="modal-phone" type="tel" placeholder="+1xxxxxxxxxx">
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn cancel-btn">Cancel</button>
+          <button class="modal-btn confirm-btn">Add Contact</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CALL IN PROGRESS MODAL -->
+    <div class="modal-overlay" id="call-modal">
+      <div class="modal">
+        <div class="modal-header">Call In Progress</div>
+        <div class="modal-body" id="call-modal-body">
+          <p id="call-modal-number"></p>
+        </div>
+        <div class="modal-actions">
+          <button class="modal-btn cancel-btn" id="call-modal-continue">Continue Call</button>
+          <button class="modal-btn confirm-btn" id="call-modal-end">End Call</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB BAR -->
+    <nav class="tab-bar">
+      <button class="tab active" data-view="dialpad">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="4" height="4" rx="1"/><rect x="10" y="2" width="4" height="4" rx="1"/><rect x="18" y="2" width="4" height="4" rx="1"/><rect x="2" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="18" y="10" width="4" height="4" rx="1"/><rect x="2" y="18" width="4" height="4" rx="1"/><rect x="10" y="18" width="4" height="4" rx="1"/><rect x="18" y="18" width="4" height="4" rx="1"/></svg>
+        Keypad
+      </button>
+      <button class="tab" data-view="contacts">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        Contacts
+      </button>
+      <button class="tab" data-view="history">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m12 6v6l4 2"/></svg>
+        Recents
+      </button>
+      <button class="tab" data-view="settings">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58z"/></svg>
+        Settings
+      </button>
+    </nav>
   </div>
+
   <script src="https://sdk.twilio.com/js/v2/twilio.js"></script>
   <script src="/app.js"></script>
   <script>

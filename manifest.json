@@ -2,11 +2,12 @@
   "name": "Twilio Dialer",
   "short_name": "Dialer",
   "id": "/",
-  "description": "Twilio-powered voice dialer PWA",
+  "description": "Professional phone dialer with Twilio",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icon.svg",

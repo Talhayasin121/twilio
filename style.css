@@ -2,6 +2,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
 }
 
 :root {
@@ -9,11 +11,12 @@
   --bg: #000000;
   --surface: #1c1c1e;
   --surface2: #2c2c2e;
+  --surface3: #3a3a3c;
   --text: #ffffff;
   --text-secondary: #8e8e93;
   --danger: #ff3b30;
   --success: #34c759;
-  --call-btn: #34c759;
+  --yellow: #ffcc00;
 }
 
 body {
@@ -21,343 +24,594 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  -webkit-tap-highlight-color: transparent;
-  user-select: none;
+  min-height: 100dvh;
+  overflow-x: hidden;
 }
 
 #app {
   min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   flex-direction: column;
 }
 
-.tab-bar {
-  display: flex;
-  background: var(--surface);
-  padding: 8px 16px 24px;
-}
-
-.tab-btn {
-  flex: 1;
-  padding: 8px;
-  border: none;
-  background: none;
-  color: var(--text-secondary);
-  font-size: 10px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-}
-
-.tab-btn::before {
-  content: '';
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: var(--text-secondary);
-}
-
-.tab-btn[data-view="dialpad"]::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.04.74-.24 1.02l-2.2 2.2z'/%3E%3C/svg%3E"); }
-.tab-btn[data-view="contacts"]::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E"); }
-.tab-btn[data-view="history"]::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 17.9 10.51 19 12 19c5.52 0 10-4.48 10-10s-4.48-10-10-10z'/%3E%3C/svg%3E"); }
-.tab-btn[data-view="settings"]::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z'/%3E%3C/svg%3E"); }
-
-.tab-btn.active {
-  color: var(--primary);
-}
-
-.tab-btn.active::before {
-  background: var(--primary);
-  -webkit-mask-size: cover;
-  mask-size: cover;
-}
-
+/* VIEWS */
 .view {
   display: none;
   flex: 1;
+  flex-direction: column;
+  padding-bottom: 60px;
 }
 
 .view.active {
   display: flex;
-  flex-direction: column;
 }
 
+/* DIALPAD */
 #view-dialpad {
   background: var(--bg);
-  padding: 20px;
 }
 
 .dialpad-display {
-  flex: 0 0 70px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   text-align: center;
-  font-size: 32px;
+  padding: 40px 16px 20px;
+  min-height: 120px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialpad-number {
+  font-size: 36px;
   font-weight: 300;
   letter-spacing: 2px;
   color: var(--text);
+  transition: font-size 0.2s;
 }
 
+.dialpad-number.short {
+  font-size: 42px;
+}
+
+.dialpad-name {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  min-height: 20px;
+}
+
+/* KEYS */
 .dialpad-grid {
-  flex: 1;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  padding: 20px 10px;
-  align-content: center;
+  gap: 16px;
+  padding: 0 40px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.dialpad-key {
+.key {
   aspect-ratio: 1;
   border: none;
   border-radius: 50%;
   background: var(--surface2);
   color: var(--text);
-  font-size: 28px;
-  font-weight: 400;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  transition: background 0.15s;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.dialpad-key span {
-  display: block;
-  font-size: 5px;
+.key:active {
+  background: var(--surface3);
+}
+
+.key span {
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.key small {
+  font-size: 10px;
   color: var(--text-secondary);
-  margin-top: -4px;
-  letter-spacing: 0;
+  letter-spacing: 1px;
+  margin-top: 2px;
 }
 
-.dialpad-key:active {
-  background: var(--text);
-  color: var(--bg);
+/* DIALPAD ACTIONS */
+.dialpad-actions {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 20px 40px 40px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.dialpad-clear {
-
-.dialpad-clear {
-  grid-column: span 3;
-  border: none;
+.action-btn {
   background: none;
-  color: var(--primary);
-  font-size: 16px;
-  padding: 12px;
+  border: none;
+  color: var(--text-secondary);
   cursor: pointer;
+  padding: 12px;
+  display: none;
 }
 
-.dialpad-call-btn {
-  width: 70px;
-  height: 70px;
+.action-btn.visible {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-btn {
+  width: 64px;
+  height: 64px;
   border: none;
   border-radius: 50%;
-  background: var(--call-btn);
-  margin: 0 auto;
+  background: var(--success);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(52, 199, 89, 0.4);
+  box-shadow: 0 4px 16px rgba(52, 199, 89, 0.4);
+  transition: transform 0.15s;
 }
 
-.dialpad-call-btn::before {
-  content: '';
-  width: 24px;
-  height: 24px;
-  background: white;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black'%3E%3Cpath d='M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.04.74-.24 1.02l-2.2 2.2z'/%3E%3C/svg%3E");
-  -webkit-mask-size: cover;
-  mask-size: cover;
+.call-btn:active {
+  transform: scale(0.95);
 }
 
-#view-contacts .add-contact-btn,
-#view-settings .save-settings-btn {
-  padding: 16px 24px;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary);
-  color: white;
-  font-size: 16px;
-  font-weight: 500;
-  cursor: pointer;
-  margin: 16px;
+.call-btn.disabled {
+  background: var(--surface3);
+  box-shadow: none;
+  cursor: default;
 }
 
-#view-settings {
-  padding: 20px;
+.call-btn.disabled:active {
+  transform: none;
 }
 
-#view-settings .settings-form {
+/* CONTACTS */
+.search-bar {
   display: flex;
-  flex-direction: column;
-  gap: 20px;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--surface2);
 }
 
-#view-settings .settings-form label {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
+.search-bar svg {
   color: var(--text-secondary);
 }
 
-#view-settings .settings-form input {
-  padding: 16px;
+.search-bar input {
+  flex: 1;
   background: var(--surface2);
   border: none;
-  border-radius: 12px;
+  border-radius: 10px;
+  padding: 12px 16px;
   color: var(--text);
   font-size: 16px;
+  outline: none;
 }
 
-.contacts-list,
-.history-list {
+.contacts-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.contact-item {
   display: flex;
-  flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--surface2);
+}
+
+.contact-item:active {
   background: var(--surface2);
 }
 
-.contact-item,
+.contact-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--primary);
+}
+
+.contact-info {
+  flex: 1;
+}
+
+.contact-name {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.contact-phone {
+  color: var(--text-secondary);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.contact-call-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 50%;
+  background: var(--success);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contact-delete-btn {
+  background: none;
+  border: none;
+  color: var(--danger);
+  font-size: 14px;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+/* HISTORY */
+.history-list {
+  flex: 1;
+}
+
 .history-item {
   display: flex;
   align-items: center;
-  padding: 16px;
-  background: var(--surface);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--surface2);
 }
 
-.contact-info,
+.history-item:active {
+  background: var(--surface2);
+}
+
+.history-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--surface2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.history-icon.outbound svg {
+  color: var(--success);
+}
+
+.history-icon.inbound svg {
+  color: var(--primary);
+}
+
 .history-info {
   flex: 1;
 }
 
-.contact-name,
 .history-number {
+  font-size: 16px;
   font-weight: 500;
-  font-size: 17px;
 }
 
-.contact-phone,
 .history-meta {
   color: var(--text-secondary);
   font-size: 14px;
   margin-top: 2px;
 }
 
-.call-contact-btn,
-.delete-contact-btn,
-.call-back-btn {
-  padding: 10px 16px;
+.history-call-btn {
+  width: 44px;
+  height: 44px;
   border: none;
-  border-radius: 8px;
+  border-radius: 50%;
+  background: var(--success);
   cursor: pointer;
-  font-size: 14px;
-}
-
-.call-contact-btn,
-.call-back-btn {
-  background: var(--primary);
-  color: white;
-}
-
-.delete-contact-btn {
-  background: var(--danger);
-  color: white;
-}
-
-#view-call {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: var(--bg);
-  color: white;
-  display: none;
-  flex-direction: column;
+  display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
 }
 
-#view-call.active {
-  display: flex;
+/* SETTINGS */
+.settings-header {
+  padding: 20px 16px 8px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.settings-description {
+  padding: 0 16px 24px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.settings-form {
+  padding: 0 16px;
+}
+
+.field-group {
+  margin-bottom: 20px;
+}
+
+.field-group label {
+  display: block;
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.field-group input {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border: none;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 16px;
+  outline: none;
+}
+
+.field-group input:focus {
+  outline: 2px solid var(--primary);
+}
+
+.save-btn {
+  width: 100%;
+  padding: 16px;
+  background: var(--primary);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 12px;
+}
+
+.save-btn:active {
+  background: #0066d6;
+}
+
+#settings-status {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  text-align: center;
+  display: none;
+}
+
+#settings-status.success {
+  display: block;
+  background: rgba(52, 199, 89, 0.2);
+  color: var(--success);
+}
+
+#settings-status.error {
+  display: block;
+  background: rgba(255, 59, 48, 0.2);
+  color: var(--danger);
+}
+
+/* ACTIVE CALL */
+#view-call {
+  background: var(--bg);
+  align-items: center;
+  padding: 40px 20px;
+  text-align: center;
 }
 
 .call-status {
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+
+.call-number {
   font-size: 28px;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 400;
+  margin-bottom: 24px;
 }
 
 .call-timer {
   font-size: 56px;
   font-weight: 200;
   font-variant-numeric: tabular-nums;
-  margin: 16px 0;
+  margin: 24px 0 48px;
 }
 
 .call-controls {
-  display: flex;
-  gap: 24px;
-  margin-top: 32px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
-.call-controls button {
-  width: 64px;
-  height: 64px;
-  border: none;
-  border-radius: 50%;
-  background: var(--surface2);
-  color: white;
-  font-size: 12px;
-  cursor: pointer;
+.control-btn {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 8px;
+  background: var(--surface2);
+  border: none;
+  border-radius: 16px;
+  padding: 16px 12px;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
-.call-controls button::before {
-  content: '';
-  width: 24px;
-  height: 24px;
-  background: white;
-  mask-size: cover;
+.control-btn:active {
+  background: var(--surface3);
 }
 
-.mute-btn::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M19 11h-1.7c0 .74-.16 1.43-.43 2.05l1.23 1.23c.56-.98.9-2.09.9-3.28zm-4.02.41c-.38-.55-.77-1.07-1.21-1.55L12 10.36V11h2.05l-.07-.59zM4.27 3H3v2h2.05l7.11 7.11c-.82.54-1.39 1.42-1.61 2.45H4.27c-.22-.63-.27-1.32-.04-1.94L9.13 12l-2.14-.01L4.27 3zM12 4L9.19 6.81 12 9.63V4z'/%3E%3C/svg%3E"); }
-
-.hold-btn::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M17 3H7c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H7V5h10v14z'/%3E%3C/svg%3E"); }
-
-.keypad-btn::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z'/%3E%3C/svg%3E"); }
-
-.end-call-btn::before { mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.23-2.67 2.15v-3.41c1.21-.74 2.63-1.21 4.23-1.21 1.95 0 3.73.68 5.11 1.82l1.31-1.31A7.962 7.962 0 0 0 12 5c-4.42 0-8 3.58-8 8s3.58 8 8 8c1.51 0 2.93-.43 4.17-1.15l-1.31-1.31c-1.38 1.13-3.15 1.8-5.11 1.8z' transform='rotate(135 12 12)'/%3E%3C/svg%3E"); }
-
-.call-controls button.active {
-  background: var(--text-secondary);
+.control-btn.active {
+  background: var(--text);
+  color: var(--bg);
 }
 
-.end-call-btn {
+.control-btn span {
+  font-size: 13px;
+}
+
+.control-btn.end-btn {
   background: var(--danger);
 }
 
-.keypad-btn {
-  background: rgba(255, 255, 255, 0.15);
+.control-btn.end-btn:active {
+  background: #d32f2f;
 }
 
-.edit-contact-btn {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: var(--surface2);
-  color: white;
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid var(--surface2);
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.modal-body p {
+  color: var(--text-secondary);
   font-size: 14px;
+  text-align: center;
+}
+
+.modal-actions {
+  display: flex;
+  border-top: 1px solid var(--surface2);
+}
+
+.modal-btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  background: none;
+  font-size: 16px;
   cursor: pointer;
-  margin-right: 8px;
+  color: var(--primary);
+}
+
+.modal-btn:active {
+  background: var(--surface2);
+}
+
+.cancel-btn {
+  border-right: 1px solid var(--surface2);
+}
+
+.confirm-btn {
+  font-weight: 600;
+}
+
+/* TAB BAR */
+.tab-bar {
+  display: flex;
+  background: var(--surface);
+  border-top: 1px solid var(--surface2);
+  padding: 8px 8px 24px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+}
+
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.tab.active {
+  color: var(--primary);
+}
+
+.tab svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 400px) {
+  .dialpad-grid {
+    padding: 0 24px;
+    gap: 12px;
+  }
+  
+  .key span {
+    font-size: 26px;
+  }
+  
+  .call-controls {
+    gap: 12px;
+  }
+  
+  .control-btn {
+    padding: 12px 8px;
+  }
 }
