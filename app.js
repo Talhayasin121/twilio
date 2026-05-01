@@ -242,28 +242,42 @@ function saveSettings() {
 
 function renderDialpad() {
   const grid = document.querySelector('.dialpad-grid');
+  if (!grid) return;
+  
+  grid.innerHTML = '';
+  
   const keys = [
-    '1', '2', '3',
-    '4', '5', '6',
-    '7', '8', '9',
-    '*', '0', '#'
+    { k: '1', l: '' },
+    { k: '2', l: 'ABC' },
+    { k: '3', l: 'DEF' },
+    { k: '4', l: 'GHI' },
+    { k: '5', l: 'JKL' },
+    { k: '6', l: 'MNO' },
+    { k: '7', l: 'PQRS' },
+    { k: '8', l: 'TUV' },
+    { k: '9', l: 'WXYZ' },
+    { k: '*', l: '' },
+    { k: '0', l: '+' },
+    { k: '#', l: '' }
   ];
-  grid.innerHTML = keys.map(key => `
-    <button class="dialpad-key" data-key="${key}">${key}</button>
-  `).join('');
-
-  grid.querySelectorAll('.dialpad-key').forEach(key => {
-    key.addEventListener('click', () => {
-      state.phoneNumber += key.dataset.key;
+  
+  keys.forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = 'dialpad-key';
+    btn.dataset.key = key.k;
+    btn.innerHTML = key.k + (key.l ? '<span>' + key.l + '</span>' : '');
+    btn.addEventListener('click', () => {
+      state.phoneNumber += key.k;
       updateDisplay();
     });
+    grid.appendChild(btn);
   });
-
+  
   const clearBtn = document.createElement('button');
   clearBtn.className = 'dialpad-clear';
-  clearBtn.textContent = 'Clear';
+  clearBtn.textContent = '⌫';
   clearBtn.addEventListener('click', () => {
-    state.phoneNumber = '';
+    state.phoneNumber = state.phoneNumber.slice(0, -1);
     updateDisplay();
   });
   grid.appendChild(clearBtn);
