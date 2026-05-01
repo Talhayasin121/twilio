@@ -3,11 +3,80 @@ const state = {
   phoneNumber: '',
   isInCall: false,
   isMuted: false,
-  isOnHold: false
+  isOnHold: false,
+  contacts: []
 };
+
+function callNumber(phone) {
+  state.phoneNumber = phone;
+  updateDisplay();
+  startCall();
+}
+
+function loadContacts() {
+  const saved = localStorage.getItem('twilio_contacts');
+  state.contacts = saved ? JSON.parse(saved) : [];
+  renderContacts();
+}
+
+function saveContacts() {
+  localStorage.setItem('twilio_contacts', JSON.stringify(state.contacts));
+}
+
+function addContact(name, phone) {
+  state.contacts.push({ id: Date.now(), name, phone });
+  saveContacts();
+  renderContacts();
+}
+
+function deleteContact(id) {
+  state.contacts = state.contacts.filter(c => c.id !== id);
+  saveContacts();
+  renderContacts();
+}
+
+function renderContacts() {
+  const list = document.querySelector('.contacts-list');
+  if (!list) return;
+  
+  list.innerHTML = state.contacts.map(contact => `
+    <div class="contact-item" data-id="${contact.id}">
+      <div class="contact-info">
+        <div class="contact-name">${contact.name}</div>
+        <div class="contact-phone">${contact.phone}</div>
+      </div>
+      <button class="call-contact-btn">Call</button>
+      <button class="delete-contact-btn">Delete</button>
+    </div>
+  `).join('');
+  
+  list.querySelectorAll('.call-contact-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt(e.target.closest('.contact-item').dataset.id);
+      const contact = state.contacts.find(c => c.id === id);
+      callNumber(contact.phone);
+    });
+  });
+  
+  list.querySelectorAll('.delete-contact-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt(e.target.closest('.contact-item').dataset.id);
+      deleteContact(id);
+    });
+  });
+}
+
+function showAddContactForm() {
+  const name = prompt('Contact name:');
+  if (!name) return;
+  const phone = prompt('Phone number:');
+  if (!phone) return;
+  addContact(name, phone);
+}
 
 function init() {
   loadSettings();
+  loadContacts();
   setupNavigation();
   renderDialpad();
   setupEventListeners();
@@ -23,30 +92,48 @@ function setupNavigation() {
 }
 
 function switchView(viewName) {
+  const viewEl = document.getElementById(`view-${viewName}`);
+  const tabBtn = document.querySelector(`[data-view="${viewName}"]`);
+  if (!viewEl || !tabBtn) return;
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(`view-${viewName}`).classList.add('active');
+  viewEl.classList.add('active');
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector(`[data-view="${viewName}"]`).classList.add('active');
+  tabBtn.classList.add('active');
   state.currentView = viewName;
 }
 
 function loadSettings() {
-  const sid = localStorage.getItem('twilio_sid');
-  const token = localStorage.getItem('twilio_token');
-  const callerId = localStorage.getItem('twilio_callerid');
-  if (sid) document.getElementById('setting-sid').value = sid;
-  if (token) document.getElementById('setting-token').value = token;
-  if (callerId) document.getElementById('setting-callerid').value = callerId;
+  try {
+    const sid = localStorage.getItem('twilio_sid');
+    const token = localStorage.getItem('twilio_token');
+    const callerId = localStorage.getItem('twilio_callerid');
+    if (sid) document.getElementById('setting-sid').value = sid;
+    if (token) document.getElementById('setting-token').value = token;
+    if (callerId) document.getElementById('setting-callerid').value = callerId;
+  } catch (e) {
+    console.error('Failed to load settings:', e);
+  }
 }
 
 function saveSettings() {
-  const sid = document.getElementById('setting-sid').value;
-  const token = document.getElementById('setting-token').value;
-  const callerId = document.getElementById('setting-callerid').value;
-  localStorage.setItem('twilio_sid', sid);
-  localStorage.setItem('twilio_token', token);
-  localStorage.setItem('twilio_callerid', callerId);
-  alert('Settings saved');
+  const sid = document.getElementById('setting-sid').value.trim();
+  const token = document.getElementById('setting-token').value.trim();
+  const callerId = document.getElementById('setting-callerid').value.trim();
+
+  if (!sid || !token || !callerId) {
+    alert('All fields are required');
+    return;
+  }
+
+  try {
+    localStorage.setItem('twilio_sid', sid);
+    localStorage.setItem('twilio_token', token);
+    localStorage.setItem('twilio_callerid', callerId);
+    alert('Settings saved');
+  } catch (e) {
+    console.error('Failed to save settings:', e);
+    alert('Failed to save settings');
+  }
 }
 
 function renderDialpad() {
@@ -84,7 +171,10 @@ function updateDisplay() {
 }
 
 function setupEventListeners() {
-  document.querySelector('.save-settings-btn')?.addEventListener('click', saveSettings);
+  document.getElementById('settings-form')?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    saveSettings();
+  });
 
   document.querySelector('.call-btn')?.addEventListener('click', () => {
     if (state.phoneNumber) {
@@ -93,6 +183,8 @@ function setupEventListeners() {
   });
 
   document.querySelector('.end-call-btn')?.addEventListener('click', endCall);
+
+  document.querySelector('.add-contact-btn')?.addEventListener('click', showAddContactForm);
 }
 
 function startCall() {

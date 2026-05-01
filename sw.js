@@ -4,13 +4,19 @@ const ASSETS = [
   '/index.html',
   '/style.css',
   '/app.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      try {
+        await cache.addAll(ASSETS);
+      } catch (err) {
+        console.warn('Some assets failed to cache:', err);
+      }
     })
   );
   self.skipWaiting();
@@ -32,7 +38,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+      return response || fetch(event.request).catch(() => {
+        return caches.match('/index.html');
+      });
     })
   );
 });

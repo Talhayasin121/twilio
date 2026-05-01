@@ -1,6 +1,7 @@
 {
   "name": "Twilio Dialer",
   "short_name": "Dialer",
+  "id": "/",
   "description": "Twilio-powered voice dialer PWA",
   "start_url": "/",
   "display": "standalone",
