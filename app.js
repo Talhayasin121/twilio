@@ -280,7 +280,7 @@ function setupEventListeners() {
     saveSettings();
   });
 
-  document.querySelector('.call-btn')?.addEventListener('click', () => {
+  document.querySelector('.dialpad-call-btn')?.addEventListener('click', () => {
     if (state.phoneNumber) {
       startCall();
     }

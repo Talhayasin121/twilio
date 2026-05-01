@@ -2,27 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#2563eb">
-  <title>Twilio Dialer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Dialer</title>
   <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/icon-192.png">
+  <link rel="apple-touch-icon" href="/icon.svg">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div id="app">
-    <nav class="tab-bar">
-      <button class="tab-btn active" data-view="dialpad">Dialpad</button>
-      <button class="tab-btn" data-view="contacts">Contacts</button>
-      <button class="tab-btn" data-view="history">History</button>
-      <button class="tab-btn" data-view="settings">Settings</button>
-    </nav>
-
     <div class="view active" id="view-dialpad">
       <div class="dialpad-display"></div>
       <div class="dialpad-grid"></div>
-      <button class="call-btn">Call</button>
+      <div class="dialpad-call-btn"></div>
     </div>
+
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-view="dialpad">Keypad</button>
+      <button class="tab-btn" data-view="contacts">Contacts</button>
+      <button class="tab-btn" data-view="history">Recents</button>
+      <button class="tab-btn" data-view="settings">Settings</button>
+    </nav>
 
     <div class="view" id="view-contacts">
       <div class="contacts-list"></div>
@@ -35,16 +37,16 @@
 
     <div class="view" id="view-settings">
       <form class="settings-form" id="settings-form">
-        <label for="setting-sid">Account SID<input id="setting-sid" type="text"></label>
-        <label for="setting-token">Auth Token<input id="setting-token" type="password"></label>
-        <label for="setting-callerid">Caller ID<input id="setting-callerid" type="tel"></label>
-        <button type="submit" class="save-settings-btn">Save</button>
+        <label for="setting-sid">Account SID<input id="setting-sid" type="text" placeholder="AC..."></label>
+        <label for="setting-token">Auth Token<input id="setting-token" type="password" placeholder="..."></label>
+        <label for="setting-callerid">Caller ID<input id="setting-callerid" type="tel" placeholder="+1..."></label>
+        <button type="submit" class="save-settings-btn">Save Settings</button>
       </form>
     </div>
 
     <div class="view" id="view-call">
       <div class="call-status"></div>
-      <div class="call-timer"></div>
+      <div class="call-timer">00:00</div>
       <div class="call-controls">
         <button class="mute-btn">Mute</button>
         <button class="hold-btn">Hold</button>
@@ -53,6 +55,7 @@
       </div>
     </div>
   </div>
+  <script src="https://sdk.twilio.com/js/v2/twilio.js"></script>
   <script src="/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
