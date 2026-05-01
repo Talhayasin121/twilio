@@ -596,6 +596,29 @@ body {
   height: 24px;
 }
 
+/* FAB BUTTON */
+.fab-add {
+  position: fixed;
+  bottom: 80px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: var(--primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+  z-index: 51;
+  transition: transform 0.15s;
+}
+
+.fab-add:active {
+  transform: scale(0.95);
+}
+
 /* RESPONSIVE */
 @media (max-width: 400px) {
   .dialpad-grid {

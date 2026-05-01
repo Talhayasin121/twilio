@@ -503,6 +503,11 @@ function setupContactModal() {
     addContact(name, phone);
     closeContactModal();
   });
+  
+  // FAB button
+  document.getElementById('add-contact-btn')?.addEventListener('click', () => {
+    openContactModal();
+  });
 }
 
 // CALL MODAL
