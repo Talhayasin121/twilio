@@ -4,7 +4,8 @@ const state = {
   isInCall: false,
   isMuted: false,
   isOnHold: false,
-  contacts: []
+  contacts: [],
+  history: []
 };
 
 function callNumber(phone) {
@@ -13,14 +14,29 @@ function callNumber(phone) {
   startCall();
 }
 
+function htmlEscape(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 function loadContacts() {
-  const saved = localStorage.getItem('twilio_contacts');
-  state.contacts = saved ? JSON.parse(saved) : [];
+  try {
+    const saved = localStorage.getItem('twilio_contacts');
+    state.contacts = saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    console.error('Failed to load contacts:', e);
+    state.contacts = [];
+  }
   renderContacts();
 }
 
 function saveContacts() {
-  localStorage.setItem('twilio_contacts', JSON.stringify(state.contacts));
+  try {
+    localStorage.setItem('twilio_contacts', JSON.stringify(state.contacts));
+  } catch (e) {
+    console.error('Failed to save contacts:', e);
+  }
 }
 
 function addContact(name, phone) {
@@ -42,10 +58,11 @@ function renderContacts() {
   list.innerHTML = state.contacts.map(contact => `
     <div class="contact-item" data-id="${contact.id}">
       <div class="contact-info">
-        <div class="contact-name">${contact.name}</div>
-        <div class="contact-phone">${contact.phone}</div>
+        <div class="contact-name">${htmlEscape(contact.name)}</div>
+        <div class="contact-phone">${htmlEscape(contact.phone)}</div>
       </div>
       <button class="call-contact-btn">Call</button>
+      <button class="edit-contact-btn">Edit</button>
       <button class="delete-contact-btn">Delete</button>
     </div>
   `).join('');
@@ -58,6 +75,14 @@ function renderContacts() {
     });
   });
   
+  list.querySelectorAll('.edit-contact-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt(e.target.closest('.contact-item').dataset.id);
+      const contact = state.contacts.find(c => c.id === id);
+      showAddContactForm(contact.id);
+    });
+  });
+  
   list.querySelectorAll('.delete-contact-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       const id = parseInt(e.target.closest('.contact-item').dataset.id);
@@ -66,17 +91,96 @@ function renderContacts() {
   });
 }
 
-function showAddContactForm() {
-  const name = prompt('Contact name:');
-  if (!name) return;
-  const phone = prompt('Phone number:');
-  if (!phone) return;
-  addContact(name, phone);
+function loadHistory() {
+  try {
+    const saved = localStorage.getItem('twilio_history');
+    state.history = saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    console.error('Failed to load history:', e);
+    state.history = [];
+  }
+  renderHistory();
+}
+
+function saveHistory() {
+  try {
+    localStorage.setItem('twilio_history', JSON.stringify(state.history));
+  } catch (e) {
+    console.error('Failed to save history:', e);
+  }
+}
+
+function addToHistory(number, type) {
+  const entry = {
+    id: Date.now(),
+    number,
+    type,
+    timestamp: new Date().toISOString(),
+    duration: 0
+  };
+  state.history.unshift(entry);
+  if (state.history.length > 50) state.history.pop();
+  saveHistory();
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.querySelector('.history-list');
+  if (!list) return;
+  
+  list.innerHTML = state.history.map(entry => `
+    <div class="history-item" data-id="${entry.id}">
+      <div class="history-info">
+        <div class="history-number">${htmlEscape(entry.number)}</div>
+        <div class="history-meta">${htmlEscape(entry.type)} • ${new Date(entry.timestamp).toLocaleString()}</div>
+      </div>
+      <button class="call-back-btn">Call</button>
+    </div>
+  `).join('');
+  
+  list.querySelectorAll('.call-back-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = parseInt(e.target.closest('.history-item').dataset.id);
+      const entry = state.history.find(h => h.id === id);
+      if (entry) callNumber(entry.number);
+    });
+  });
+}
+
+function showAddContactForm(contactId = null) {
+  let name = '';
+  let phone = '';
+  
+  if (contactId) {
+    const contact = state.contacts.find(c => c.id === contactId);
+    if (contact) {
+      name = prompt('Contact name:', contact.name) || '';
+      phone = prompt('Phone number:', contact.phone) || '';
+    }
+  } else {
+    name = prompt('Contact name:') || '';
+    phone = prompt('Phone number:') || '';
+  }
+  
+  if (!name || !phone) return;
+  
+  if (contactId) {
+    const contact = state.contacts.find(c => c.id === contactId);
+    if (contact) {
+      contact.name = name;
+      contact.phone = phone;
+      saveContacts();
+      renderContacts();
+    }
+  } else {
+    addContact(name, phone);
+  }
 }
 
 function init() {
   loadSettings();
   loadContacts();
+  loadHistory();
   setupNavigation();
   renderDialpad();
   setupEventListeners();
@@ -188,6 +292,9 @@ function setupEventListeners() {
 }
 
 function startCall() {
+  if (state.phoneNumber) {
+    addToHistory(state.phoneNumber, 'outbound');
+  }
   state.isInCall = true;
   switchView('call');
   document.querySelector('.call-status').textContent = 'Connecting...';
