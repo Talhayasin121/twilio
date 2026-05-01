@@ -2,16 +2,11 @@
 const state = {
   phoneNumber: '',
   isInCall: false,
-  isMuted: false,
-  isOnHold: false,
   contacts: [],
   history: [],
-  twilio: {
-    device: null,
-    connection: null
-  },
   callTimer: null,
-  callStartTime: null
+  callStartTime: null,
+  callSid: null
 };
 
 // INIT
@@ -108,7 +103,6 @@ function updateDisplay() {
     numEl.textContent = formatted;
     numEl.className = 'dialpad-number short';
     
-    // Check if number matches a contact
     const contact = findContact(state.phoneNumber);
     nameEl.textContent = contact ? contact.name : '';
     
@@ -137,7 +131,7 @@ function formatNumber(phone) {
   return phone;
 }
 
-// TWILIO CALL
+// TWILIO CALL - Uses REST API to initiate call through PSTN
 async function startCall() {
   if (!state.phoneNumber) return;
   
@@ -148,144 +142,150 @@ async function startCall() {
     return;
   }
   
+  // Check for TwiML Bin URL
+  if (!settings.twimlUrl) {
+    showTwiMLSetup();
+    return;
+  }
+  
   try {
-    const token = await getTwilioToken(settings.sid, settings.token);
-    
-    if (!state.twilio.device) {
-      state.twilio.device = new Twilio.Device(token, {
-        debug: true,
-        codecPreferences: ['opus', 'pcmu']
-      });
-      
-      state.twilio.device.on('error', (err) => {
-        console.error('Twilio device error:', err);
-        endCall('Connection error');
-      });
-      
-      state.twilio.device.on('ready', () => {
-        console.log('Twilio device ready');
-      });
-    }
-    
     state.isInCall = true;
     switchView('call');
     
     document.getElementById('call-number').textContent = formatNumber(state.phoneNumber);
     document.querySelector('.call-status').textContent = 'Connecting...';
+    startCallTimer();
+    addToHistory(state.phoneNumber, 'outbound');
     
-    const connection = await state.twilio.device.connect({ params: { To: state.phoneNumber } });
-    state.twilio.connection = connection;
+    const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${settings.sid}/Calls.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(settings.sid + ':' + settings.token),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        From: settings.callerId,
+        To: state.phoneNumber,
+        Url: settings.twimlUrl
+      })
+    });
     
-    connection.on('accept', () => {
-      document.querySelector('.call-status').textContent = 'Connected';
+    const data = await response.json();
+    
+    if (response.ok) {
+      state.callSid = data.sid;
+      document.querySelector('.call-status').textContent = 'Ringing...';
       startCallTimer();
-      addToHistory(state.phoneNumber, 'outbound');
-    });
-    
-    connection.on('disconnect', () => {
-      const duration = state.twilio.connection?._message?.duration || 0;
-      endCall(duration > 0 ? `Call ended (${formatDuration(duration)})` : 'Call ended');
-    });
-    
-    connection.on('error', (err) => {
-      console.error('Connection error:', err);
-      endCall('Call failed: ' + err.message);
-    });
-    
+    } else {
+      throw new Error(data.message || 'Failed to place call');
+    }
   } catch (err) {
-    console.error('Failed to start call:', err);
-    endCall('Failed to connect: ' + err.message);
+    console.error('Call failed:', err);
+    endCall('Call failed: ' + err.message);
   }
 }
 
 function endCall(reason = 'Call ended') {
-  state.isInCall = false;
-  state.isMuted = false;
-  state.isOnHold = false;
-  
-  if (state.twilio.connection) {
-    state.twilio.connection.disconnect();
-    state.twilio.connection = null;
+  if (state.callSid) {
+    const settings = getSettings();
+    fetch(`https://api.twilio.com/2010-04-01/Accounts/${settings.sid}/Calls/${state.callSid}.json`, {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Basic ' + btoa(settings.sid + ':' + settings.token),
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({ Status: 'completed' })
+    }).catch(() => {});
   }
   
+  state.isInCall = false;
+  state.callSid = null;
   stopCallTimer();
-  updateCallControls();
   
   if (reason) {
     switchView('dialpad');
   }
 }
 
-async function getTwilioToken(sid, token) {
-  const response = await fetch('https://api.twilio.com/2010-04-Accounts/' + sid + '/Tokens.json', {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Basic ' + btoa(sid + ':' + token),
-      'Content-Type': 'application/x-www-form-urlencoded'
+// SETTINGS
+function getSettings() {
+  return {
+    sid: localStorage.getItem('twilio_sid') || '',
+    token: localStorage.getItem('twilio_token') || '',
+    callerId: localStorage.getItem('twilio_callerid') || '',
+    twimlUrl: localStorage.getItem('twilio_twiml_url') || ''
+  };
+}
+
+function loadSettings() {
+  const settings = getSettings();
+  const sidInput = document.getElementById('setting-sid');
+  const tokenInput = document.getElementById('setting-token');
+  const callerInput = document.getElementById('setting-callerid');
+  const twimlInput = document.getElementById('setting-twiml-url');
+  
+  if (sidInput) sidInput.value = settings.sid;
+  if (tokenInput) tokenInput.value = settings.token;
+  if (callerInput) callerInput.value = settings.callerId;
+  if (twimlInput) twimlInput.value = settings.twimlUrl;
+}
+
+function showTwiMLSetup() {
+  const url = prompt(
+    'Twilio Dialer needs a TwiML Bin to route calls.\n\n' +
+    '1. Go to twilio.com/console/twiml-bins\n' +
+    '2. Create a new TwiML Bin\n' +
+    '3. Paste this content:\n\n' +
+    '<Response>\n  <Dial>{{To}}</Dial>\n</Response>\n\n' +
+    '4. Copy the URL and paste it below:'
+  );
+  
+  if (url && url.includes('twilio.com')) {
+    localStorage.setItem('twilio_twiml_url', url);
+    startCall(); // Retry the call
+  }
+}
+
+function setupSettings() {
+  document.getElementById('settings-form')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const sid = document.getElementById('setting-sid').value.trim();
+    const token = document.getElementById('setting-token').value.trim();
+    const callerId = document.getElementById('setting-callerid').value.trim();
+    const twimlUrl = document.getElementById('setting-twiml-url').value.trim();
+    
+    if (!sid || !token || !callerId) {
+      showSettingsStatus('Account SID, Auth Token, and Caller ID are required', 'error');
+      return;
+    }
+    
+    if (!twimlUrl) {
+      showSettingsStatus('TwiML Bin URL is required for call routing', 'error');
+      return;
+    }
+    
+    showSettingsStatus('Saving settings...', '');
+    
+    try {
+      localStorage.setItem('twilio_sid', sid);
+      localStorage.setItem('twilio_token', token);
+      localStorage.setItem('twilio_callerid', callerId);
+      localStorage.setItem('twilio_twiml_url', twimlUrl);
+      
+      showSettingsStatus('Settings saved successfully!', 'success');
+    } catch (err) {
+      showSettingsStatus('Failed to save: ' + err.message, 'error');
     }
   });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to get token: ${response.status}`);
+}
+
+function showSettingsStatus(message, type) {
+  const statusEl = document.getElementById('settings-status');
+  if (statusEl) {
+    statusEl.textContent = message;
+    statusEl.className = type;
   }
-  
-  const data = await response.json();
-  return data.token;
-}
-
-function toggleMute() {
-  if (!state.twilio.connection) return;
-  state.isMuted = !state.isMuted;
-  state.twilio.connection.isMuted(state.isMuted);
-  updateCallControls();
-}
-
-function toggleHold() {
-  if (!state.twilio.connection) return;
-  state.isOnHold = !state.isOnHold;
-  state.twilio.connection.isMuted(state.isOnHold);
-  updateCallControls();
-}
-
-function updateCallControls() {
-  const muteBtn = document.getElementById('mute-btn');
-  const holdBtn = document.getElementById('hold-btn');
-  
-  if (muteBtn) muteBtn.classList.toggle('active', state.isMuted);
-  if (holdBtn) holdBtn.classList.toggle('active', state.isOnHold);
-}
-
-function setupCallControls() {
-  document.getElementById('mute-btn')?.addEventListener('click', toggleMute);
-  document.getElementById('hold-btn')?.addEventListener('click', toggleHold);
-  document.getElementById('end-call-btn')?.addEventListener('click', () => endCall());
-  
-  // Call timer display
-  document.getElementById('call-timer').textContent = '00:00';
-}
-
-function startCallTimer() {
-  state.callStartTime = Date.now();
-  state.callTimer = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - state.callStartTime) / 1000);
-    const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
-    const secs = (elapsed % 60).toString().padStart(2, '0');
-    document.getElementById('call-timer').textContent = `${mins}:${secs}`;
-  }, 1000);
-}
-
-function stopCallTimer() {
-  if (state.callTimer) {
-    clearInterval(state.callTimer);
-    state.callTimer = null;
-  }
-  document.getElementById('call-timer').textContent = '00:00';
-}
-
-function formatDuration(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 // CONTACTS
@@ -336,7 +336,7 @@ function renderContacts(filter = '') {
   if (filtered.length === 0) {
     list.innerHTML = `
       <div class="empty-state">
-        ${filter ? 'No contacts match your search' : 'No contacts yet.<br>Tap the + button on the dialpad to add one'}
+        ${filter ? 'No contacts match your search' : 'No contacts yet.<br>Tap the + button to add one'}
       </div>
     `;
     return;
@@ -356,7 +356,6 @@ function renderContacts(filter = '') {
     </div>
   `).join('');
   
-  // Event listeners
   list.querySelectorAll('.contact-call-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const phone = btn.dataset.phone;
@@ -375,7 +374,6 @@ function renderContacts(filter = '') {
   });
 }
 
-// Contact search
 document.addEventListener('DOMContentLoaded', () => {
   const searchInput = document.getElementById('contact-search');
   if (searchInput) {
@@ -527,72 +525,6 @@ function setupCallModal() {
     endCall();
     hideCallModal();
   });
-}
-
-// SETTINGS
-function getSettings() {
-  return {
-    sid: localStorage.getItem('twilio_sid') || '',
-    token: localStorage.getItem('twilio_token') || '',
-    callerId: localStorage.getItem('twilio_callerid') || ''
-  };
-}
-
-function loadSettings() {
-  const settings = getSettings();
-  const sidInput = document.getElementById('setting-sid');
-  const tokenInput = document.getElementById('setting-token');
-  const callerInput = document.getElementById('setting-callerid');
-  
-  if (sidInput) sidInput.value = settings.sid;
-  if (tokenInput) tokenInput.value = settings.token;
-  if (callerInput) callerInput.value = settings.callerId;
-}
-
-function setupSettings() {
-  document.getElementById('settings-form')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const sid = document.getElementById('setting-sid').value.trim();
-    const token = document.getElementById('setting-token').value.trim();
-    const callerId = document.getElementById('setting-callerid').value.trim();
-    
-    if (!sid || !token || !callerId) {
-      showSettingsStatus('All fields are required', 'error');
-      return;
-    }
-    
-    const statusEl = document.getElementById('settings-status');
-    statusEl.textContent = 'Verifying...';
-    statusEl.className = '';
-    statusEl.style.display = 'block';
-    
-    try {
-      // Test by getting a token
-      await getTwilioToken(sid, token);
-      
-      localStorage.setItem('twilio_sid', sid);
-      localStorage.setItem('twilio_token', token);
-      localStorage.setItem('twilio_callerid', callerId);
-      
-      showSettingsStatus('Settings saved and verified!', 'success');
-      
-      // Reset device if configured
-      if (state.twilio.device) {
-        state.twilio.device = null;
-      }
-    } catch (err) {
-      showSettingsStatus('Verification failed: ' + err.message, 'error');
-    }
-  });
-}
-
-function showSettingsStatus(message, type) {
-  const statusEl = document.getElementById('settings-status');
-  if (statusEl) {
-    statusEl.textContent = message;
-    statusEl.className = type;
-  }
 }
 
 // UTILITIES
