@@ -6,11 +6,52 @@
   <meta name="theme-color" content="#2563eb">
   <title>Twilio Dialer</title>
   <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
   <link rel="stylesheet" href="/style.css">
 </head>
 <body>
   <div id="app">
-    <!-- App content loaded here -->
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-view="dialpad">Dialpad</button>
+      <button class="tab-btn" data-view="contacts">Contacts</button>
+      <button class="tab-btn" data-view="history">History</button>
+      <button class="tab-btn" data-view="settings">Settings</button>
+    </nav>
+
+    <div class="view active" id="view-dialpad">
+      <div class="dialpad-display"></div>
+      <div class="dialpad-grid"></div>
+      <button class="call-btn">Call</button>
+    </div>
+
+    <div class="view" id="view-contacts">
+      <div class="contacts-list"></div>
+      <button class="add-contact-btn">+ Add Contact</button>
+    </div>
+
+    <div class="view" id="view-history">
+      <div class="history-list"></div>
+    </div>
+
+    <div class="view" id="view-settings">
+      <div class="settings-form">
+        <label>Account SID<input id="setting-sid" type="text"></label>
+        <label>Auth Token<input id="setting-token" type="password"></label>
+        <label>Caller ID<input id="setting-callerid" type="tel"></label>
+        <button class="save-settings-btn">Save</button>
+      </div>
+    </div>
+
+    <div class="view" id="view-call">
+      <div class="call-status"></div>
+      <div class="call-timer"></div>
+      <div class="call-controls">
+        <button class="mute-btn">Mute</button>
+        <button class="hold-btn">Hold</button>
+        <button class="keypad-btn">Keypad</button>
+        <button class="end-call-btn">End</button>
+      </div>
+    </div>
   </div>
   <script src="/app.js"></script>
   <script>
